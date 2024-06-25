@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace CasualStrategy.Tools
+namespace JustChess.Tools.Editor
 {
     public class LoadSceneWindow : EditorWindow
     {
