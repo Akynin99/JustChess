@@ -1,5 +1,6 @@
 ﻿using System;
 using JustChess.Data;
+using JustChess.Utility;
 using UnityEngine;
 using Zenject;
 
@@ -38,6 +39,8 @@ namespace JustChess
             
             float rankPos = - (_ranksCount / 2f - 0.5f) * squareSize;
             bool rankStartColor = firstColorIsDark;
+
+           
             
             for (int i = 0; i < _ranksCount; i++)
             {
@@ -48,7 +51,13 @@ namespace JustChess
                 {
                     Vector2 pos = new Vector2(filePos, rankPos);
                     
-                    SpawnVisual(pos, squareColor, _squaresParent);
+                    string fileText = null;
+                    string rankText = null;
+
+                    if (j == 0) rankText = (i + 1).ToString();
+                    if (i == 0) fileText = Alphabet.GetLetterAtIndex(j);
+                    
+                    SpawnVisual(pos, squareColor, _squaresParent, rankText, fileText);
                     
                     squareColor = !squareColor;
                     
@@ -62,17 +71,20 @@ namespace JustChess
             RefreshBoardScale();
         }
 
-        private void SpawnVisual(Vector2 pos, bool darkColor, Transform parent)
+        private void SpawnVisual(Vector2 pos, bool darkColor, Transform parent, string rankText, string fileText)
         {
             SquareVisual newVisual = Instantiate(squarePrefab, parent);
 
             newVisual.transform.position = pos;
 
             int colorIdx = darkColor ? 1 : 4;
+            int tmpColorIdx = darkColor ? 4 : 1;
 
             Color color = _colorPalette.GetColorByIndex(colorIdx);
+            Color tmpColor = _colorPalette.GetColorByIndex(tmpColorIdx);
 
             newVisual.SetColor(color);
+            newVisual.SetText(rankText, fileText, tmpColor);
         }
 
         private void RefreshBoardScale()

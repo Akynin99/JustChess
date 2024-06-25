@@ -18,12 +18,14 @@ namespace JustChess.Project
     public class ProjectInstaller : MonoInstaller
     {
         [SerializeField] private ColorPalette colorPalette;
+        [SerializeField] private PieceSpriteSet pieceSpriteSet;
         
         public override void InstallBindings()
         {
             ProjectDiContainer.Container = Container;
             
             Container.BindInstance(colorPalette).AsSingle();
+            Container.BindInstance(pieceSpriteSet).AsSingle();
         }
     }
 }

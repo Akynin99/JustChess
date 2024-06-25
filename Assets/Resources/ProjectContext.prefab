@@ -74,4 +74,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 486fa31f2a86ac34aaa24a1f27d06961, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  colorPalette: {fileID: 11400000, guid: 5fada963f90f29240865eedd704067e0, type: 2}
+  colorPalette: {fileID: 11400000, guid: 2a9ce9eeb4bad2d4fa9c7af629509ef4, type: 2}

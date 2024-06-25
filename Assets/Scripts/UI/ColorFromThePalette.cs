@@ -30,6 +30,14 @@ namespace JustChess.UI
                 tmp.color = _colorPalette.GetColorByIndex(colorIndex);
                 return;
             }
+            
+            Camera camera = GetComponent<Camera>();
+
+            if (camera)
+            {
+                camera.backgroundColor = _colorPalette.GetColorByIndex(colorIndex);
+                return;
+            }
         }
     }
 }
