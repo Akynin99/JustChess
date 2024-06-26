@@ -75,3 +75,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colorPalette: {fileID: 11400000, guid: 2a9ce9eeb4bad2d4fa9c7af629509ef4, type: 2}
+  pieceSpriteSet: {fileID: 11400000, guid: 29decd326ec9cee45ab0a5acf340c9b7, type: 2}
+  mainSettings: {fileID: 11400000, guid: 5b3c970597602be489738be38cb96bcf, type: 2}

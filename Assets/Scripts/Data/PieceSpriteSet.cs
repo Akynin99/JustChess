@@ -10,21 +10,9 @@ namespace JustChess.Data
         [SerializeField] private PieceSpriteList whiteList;
         [SerializeField] private PieceSpriteList blackList;
 
-        public enum ChessPieceName
-        {
-            Pawn = 0,
-            King = 1,
-            Queen = 2,
-            Rook = 3,
-            Bishop = 4,
-            Knight = 5,
-        }
+        
 
-        public enum ChessPieceColor
-        {
-            White = 0,
-            Black = 1,
-        }
+        
         
         [Serializable]
         private class PieceSpriteList
@@ -36,26 +24,26 @@ namespace JustChess.Data
             [SerializeField] public Sprite bishop;
             [SerializeField] public Sprite knight;
 
-            public Sprite GetSprite(ChessPieceName pieceName)
+            public Sprite GetSprite(PieceType pieceName)
             {
                 switch (pieceName)
                 {
-                    case ChessPieceName.Pawn:
+                    case PieceType.Pawn:
                         return pawn;
                     
-                    case ChessPieceName.King:
+                    case PieceType.King:
                         return king;
                     
-                    case ChessPieceName.Queen:
+                    case PieceType.Queen:
                         return queen;
                     
-                    case ChessPieceName.Rook:
+                    case PieceType.Rook:
                         return rook;
                     
-                    case ChessPieceName.Bishop:
+                    case PieceType.Bishop:
                         return bishop;
                     
-                    case ChessPieceName.Knight:
+                    case PieceType.Knight:
                         return knight;
                     
                     default:
@@ -64,14 +52,14 @@ namespace JustChess.Data
             }
         }
 
-        public Sprite GetSprite(ChessPieceName pieceName, ChessPieceColor color)
+        public Sprite GetSprite(PieceType pieceName, PieceColor color)
         {
             switch (color)
             {
-                case ChessPieceColor.White:
+                case PieceColor.White:
                     return whiteList.GetSprite(pieceName);
                 
-                case ChessPieceColor.Black:
+                case PieceColor.Black:
                     return blackList.GetSprite(pieceName);
                 
                 default:

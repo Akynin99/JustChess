@@ -19,6 +19,7 @@ namespace JustChess.Project
     {
         [SerializeField] private ColorPalette colorPalette;
         [SerializeField] private PieceSpriteSet pieceSpriteSet;
+        [SerializeField] private MainSettings mainSettings;
         
         public override void InstallBindings()
         {
@@ -26,6 +27,7 @@ namespace JustChess.Project
             
             Container.BindInstance(colorPalette).AsSingle();
             Container.BindInstance(pieceSpriteSet).AsSingle();
+            Container.BindInstance(mainSettings).AsSingle();
         }
     }
 }

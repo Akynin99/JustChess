@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c96b798c4cdc4d7c8f02960f14ff30f8, type: 3}
+  m_Name: MainSettings
+  m_EditorClassIdentifier: 
+  defaultPosition: {fileID: 11400000, guid: dfb389f84499bf341ae7285d8f896dcc, type: 2}
+  defaultRulesSet: {fileID: 11400000, guid: fe6628ec2af4e7848887487068b4b153, type: 2}
+  boardRanksCount: 8
+  boardFilesCount: 8
