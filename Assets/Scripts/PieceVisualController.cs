@@ -75,10 +75,10 @@ namespace JustChess
 
                         pieceVisualExists = true;
                         activePiece.Checked = true;
-                        UpdatePieceVisual(activePiece, square.Piece, j, i);
+                        UpdatePieceVisual(activePiece, square.Piece, new ChessVector2(j, i));
                     }
                     
-                    if (!pieceVisualExists) SpawnPieceVisual(square.Piece, j, i);
+                    if (!pieceVisualExists) SpawnPieceVisual(square.Piece, new ChessVector2(j, i));
                 }
             }
 
@@ -97,7 +97,7 @@ namespace JustChess
             }
         }
 
-        private void SpawnPieceVisual(Piece piece, int posX, int posY)
+        private void SpawnPieceVisual(Piece piece, ChessVector2 pos)
         {
             PieceVisual visual = _pool[0];
             _pool.RemoveAt(0);
@@ -109,24 +109,24 @@ namespace JustChess
             visual.SetScale(_chessboardVisual.BoardScale);
             visual.Checked = true;
             
-            ForceUpdateVisual(visual, piece, posX, posY);
+            ForceUpdateVisual(visual, piece, pos);
         }
 
-        private void ForceUpdateVisual(PieceVisual visual, Piece piece, int posX, int posY)
+        private void ForceUpdateVisual(PieceVisual visual, Piece piece, ChessVector2 pos)
         {
             visual.SetSprite(_pieceSpriteSet.GetSprite(piece.Type, piece.Color), piece.Type, piece.Color);
             
-            visual.SetPos(_chessboardVisual.ChessboardToGlobalPos(posX, posY));
+            visual.SetPos(_chessboardVisual.ChessboardToGlobalPos(pos));
         }
 
-        private void UpdatePieceVisual(PieceVisual visual, Piece piece, int posX, int posY)
+        private void UpdatePieceVisual(PieceVisual visual, Piece piece, ChessVector2 pos)
         {
             if (visual.PieceType != piece.Type || visual.PieceColor != piece.Color)
             {
                 visual.SetSprite(_pieceSpriteSet.GetSprite(piece.Type, piece.Color), piece.Type, piece.Color);
             }
             
-            visual.SetPos(_chessboardVisual.ChessboardToGlobalPos(posX, posY));
+            visual.SetPos(_chessboardVisual.ChessboardToGlobalPos(pos));
         }
 
         private void ReturnPieceVisualToPool(PieceVisual visual)

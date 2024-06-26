@@ -8,7 +8,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Chessboard
   - Water
   - UI
   - 
@@ -40,4 +40,16 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 97046329
+    locked: 0
+  - name: Chessboard
+    uniqueID: 2744810733
+    locked: 0
+  - name: Piece
+    uniqueID: 4128848461
+    locked: 0
+  - name: Arrows
+    uniqueID: 1071620189
     locked: 0

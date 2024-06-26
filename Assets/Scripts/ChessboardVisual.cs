@@ -12,6 +12,7 @@ namespace JustChess
         [SerializeField] private SquareVisual squarePrefab;
         [SerializeField] private float squareSize = 1;
         [SerializeField] private bool firstColorIsDark = true;
+        [SerializeField] private BoxCollider2D boxCollider;
 
         [Inject] private ColorPalette _colorPalette;
         
@@ -24,6 +25,14 @@ namespace JustChess
         private float[] _squaresXPoses;
         private float[] _squaresYPoses;
         private float _lastScale;
+        private Camera _camera;
+        private float _scaledSquareSize;
+        private SquareVisual[][] _squares;
+
+        private void Awake()
+        {
+            _camera = Camera.main;
+        }
 
         private void Update()
         {
@@ -40,7 +49,16 @@ namespace JustChess
             _squaresXPoses = new float[filesCount];
             _squaresYPoses = new float[ranksCount];
 
+            _squares = new SquareVisual[ranksCount][];
+            for (int i = 0; i < ranksCount; i++)
+            {
+                _squares[i] = new SquareVisual[filesCount];
+            }
+
             _lastScale = CalculateScale();
+            _scaledSquareSize = squareSize * _lastScale;
+            Vector2 boardSize = new Vector2(filesCount * _lastScale, ranksCount * _lastScale);
+            boxCollider.size = boardSize;
             
             GameObject squaresParentObj = new GameObject
             {
@@ -70,7 +88,8 @@ namespace JustChess
                     if (j == 0) rankText = (i + 1).ToString();
                     if (i == 0) fileText = Alphabet.GetLetterAtIndex(j);
                     
-                    SpawnVisual(pos, squareColor, _squaresParent, rankText, fileText);
+                    var newSquare = SpawnVisual(pos, squareColor, _squaresParent, rankText, fileText);
+                    _squares[i][j] = newSquare;
                     
                     squareColor = !squareColor;
                     
@@ -109,7 +128,7 @@ namespace JustChess
             Debug.Log(stringBuilder);
         }
 
-        private void SpawnVisual(Vector2 pos, bool darkColor, Transform parent, string rankText, string fileText)
+        private SquareVisual SpawnVisual(Vector2 pos, bool darkColor, Transform parent, string rankText, string fileText)
         {
             SquareVisual newVisual = Instantiate(squarePrefab, parent);
 
@@ -121,13 +140,18 @@ namespace JustChess
             Color color = _colorPalette.GetColorByIndex(colorIdx);
             Color tmpColor = _colorPalette.GetColorByIndex(tmpColorIdx);
 
-            newVisual.SetColor(color);
+            newVisual.SetDefaultColor(color);
             newVisual.SetText(rankText, fileText, tmpColor);
+
+            return newVisual;
         }
 
         private void RefreshBoardScale()
         {
-            _squaresParent.localScale = CalculateScale() * Vector3.one;
+            _lastScale = CalculateScale();
+
+            _scaledSquareSize = squareSize * _lastScale;
+            _squaresParent.localScale = _lastScale * Vector3.one;
 
             _lastScreenWidth = Screen.width;
             _lastScreenHeight = Screen.height;
@@ -135,7 +159,7 @@ namespace JustChess
 
         private float CalculateScale()
         {
-            float cameraSize = Camera.main.orthographicSize;
+            float cameraSize = _camera.orthographicSize;
             
             float boardSize = squareSize;
             if (_ranksCount >= _filesCount)
@@ -159,9 +183,100 @@ namespace JustChess
             return boardScale;
         }
 
-        public Vector2 ChessboardToGlobalPos(int posX, int posY)
+        public Vector2 ChessboardToGlobalPos(ChessVector2 pos)
         {
-            return new Vector2(_squaresXPoses[posX], _squaresYPoses[posY]);
+            return new Vector2(_squaresXPoses[pos.X], _squaresYPoses[pos.Y]);
+        }
+
+        public bool GlobalPosToChessboard(Vector2 globalPos, out ChessVector2 chessPos)
+        {
+            chessPos.X = -1;
+            chessPos.Y = -1;
+
+            if (globalPos.x < _squaresXPoses[0] && _squaresXPoses[0] - globalPos.x > _scaledSquareSize / 2f)
+            {
+                return false;
+            }
+            
+            if (globalPos.x > _squaresXPoses[^1] && globalPos.x - _squaresXPoses[0] > _scaledSquareSize / 2f)
+            {
+                return false;
+            }
+            
+            if (globalPos.y < _squaresYPoses[0] && _squaresYPoses[0] - globalPos.y > _scaledSquareSize / 2f)
+            {
+                return false;
+            }
+            
+            if (globalPos.y > _squaresYPoses[^1] && globalPos.y - _squaresYPoses[0] > _scaledSquareSize / 2f)
+            {
+                return false;
+            }
+
+            float minDiff = float.MaxValue;
+
+            for (int i = 0; i < _squaresXPoses.Length; i++)
+            {
+                float diff = Mathf.Abs(_squaresXPoses[i] - globalPos.x);
+                
+                if(diff >= minDiff) continue;
+
+                minDiff = diff;
+                chessPos.X = i;
+            }
+            
+            minDiff = float.MaxValue;
+            
+            for (int i = 0; i < _squaresYPoses.Length; i++)
+            {
+                float diff = Mathf.Abs(_squaresYPoses[i] - globalPos.y);
+                
+                if(diff >= minDiff) continue;
+
+                minDiff = diff;
+                chessPos.Y = i;
+            }
+
+            return true;
+        }
+
+        public void DisableAllHighlights()
+        {
+            foreach (var rank in _squares)
+            {
+                foreach (var square in rank)
+                {
+                    square.DisableHighlight();
+                }
+            }
+        }
+
+        // ReSharper disable Unity.PerformanceAnalysis
+        public void HighlightSquare(ChessVector2 pos)
+        {
+            if (pos.X < 0 || pos.Y < 0 || _squares.Length <= pos.Y || _squares[pos.Y].Length <= pos.X)
+            {
+                Debug.LogError("Wrong chessboard position!");
+                return;
+            }
+            
+            _squares[pos.Y][pos.X].EnableHighlight(_colorPalette.HighlightSquareColor);
+        }
+
+        public void EnableAvailableMoveMark(ChessVector2 pos)
+        {
+            _squares[pos.Y][pos.X].SetAvailableMoveMarkActive(true);
+        }
+
+        public void DisableAllAvailableMoveMarks()
+        {
+            foreach (var rank in _squares)
+            {
+                foreach (var square in rank)
+                {
+                    square.SetAvailableMoveMarkActive(false);
+                }
+            }
         }
 
         public float BoardScale => _lastScale;
