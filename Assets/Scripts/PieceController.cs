@@ -108,32 +108,47 @@ namespace JustChess
             if (rule.OnlyMoveLikePawn)
             {
                 var checkPos = piecePos + movingPiece.Forward;
-                
-                if (!IsPosExists(checkPos)) return availableMoves;
-                
-                var square = _squares[checkPos.Y][checkPos.X];
 
-                if (square.Piece == null)
+                if (IsPosExists(checkPos))
                 {
-                    availableMoves.Add(checkPos);
+                    var square = _squares[checkPos.Y][checkPos.X];
 
-                    if (movingPiece.MovesCount == 0)
+                    if (square.Piece == null)
                     {
-                        checkPos += movingPiece.Forward;
-                        
-                        if (!IsPosExists(checkPos)) return availableMoves;
-                        
-                        square = _squares[checkPos.Y][checkPos.X];
+                        availableMoves.Add(checkPos);
 
-                        if (square.Piece == null)
+                        if (movingPiece.MovesCount == 0)
                         {
-                            availableMoves.Add(checkPos);
+                            checkPos += movingPiece.Forward;
+                        
+                            if (!IsPosExists(checkPos)) return availableMoves;
+                        
+                            square = _squares[checkPos.Y][checkPos.X];
+
+                            if (square.Piece == null)
+                            {
+                                availableMoves.Add(checkPos);
+                            }
                         }
                     }
                 }
-                else
+
+                checkPos = piecePos + movingPiece.RightForward;
+
+                if (IsPosExists(checkPos))
                 {
-                    return availableMoves;
+                    var square = _squares[checkPos.Y][checkPos.X];
+                    
+                    if (square.Piece != null && square.Piece.Color != movingPiece.Color) availableMoves.Add(checkPos);
+                }
+                
+                checkPos = piecePos + movingPiece.LeftForward;
+                
+                if (IsPosExists(checkPos))
+                {
+                    var square = _squares[checkPos.Y][checkPos.X];
+                    
+                    if (square.Piece != null && square.Piece.Color != movingPiece.Color) availableMoves.Add(checkPos);
                 }
                 
                 return availableMoves;
@@ -291,7 +306,6 @@ namespace JustChess
                 }
                 
             }
-            
 
             return availableMoves;
         }

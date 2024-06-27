@@ -15,7 +15,7 @@ namespace JustChess.Data
         [SerializeField] private bool enPassant;
         [SerializeField] private bool canCastling;
         [SerializeField] private bool canPromotion;
-        [SerializeField] private bool capturesOnlyLikePawn;
+        
         
         public PieceType PieceType => pieceType;
         public bool CanMoveHorizontally => canMoveHorizontally;
@@ -27,6 +27,5 @@ namespace JustChess.Data
         public bool EnPassant => enPassant;
         public bool CanCastling => canCastling;
         public bool CanPromotion => canPromotion;
-        public bool CapturesOnlyLikePawn => capturesOnlyLikePawn;
     }
 }
