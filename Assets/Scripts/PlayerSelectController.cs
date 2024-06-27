@@ -8,6 +8,7 @@ namespace JustChess
         private PieceController _pieceController;
         private ChessboardVisual _chessboardVisual;
         private Piece _selectedPiece;
+        
 
         private PieceColor _playerColor;
         
@@ -79,7 +80,7 @@ namespace JustChess
             
             if (!_pieceController.IsMoveAvailable(piece, chessPos)) return;
 
-            _pieceController.MovePieceOnPos(piece, chessPos);
+            _pieceController.TryToMovePiece(piece, chessPos);
         }
     }
 }

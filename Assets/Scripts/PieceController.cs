@@ -17,6 +17,7 @@ namespace JustChess
         private List<Piece> _pieces;
         private ChessboardVisual _chessboardVisual;
         private PieceVisualController _pieceVisualController;
+        private PieceColor _currentTurn;
 
         private void Awake()
         {
@@ -322,9 +323,11 @@ namespace JustChess
             return availableMoves.Contains(targetPos);
         }
 
-        public void MovePieceOnPos(Piece movingPiece, ChessVector2 targetPos)
+        public void TryToMovePiece(Piece movingPiece, ChessVector2 targetPos)
         {
             if (movingPiece == null) return;
+            
+            if(_currentTurn != movingPiece.Color) return;
 
             ChessVector2 pieceOldPos = new ChessVector2();
             bool pieceFound = false;
@@ -345,6 +348,11 @@ namespace JustChess
 
             _squares[targetPos.Y][targetPos.X].Piece = movingPiece;
             movingPiece.MovesCount++;
+
+            int currentTurnIdx = (int)_currentTurn;
+            var colorCount = Enum.GetNames(typeof(PieceColor)).Length;
+            int nextTurn = (currentTurnIdx + 1) % colorCount;
+            _currentTurn = (PieceColor)nextTurn;
             
             OnPositionChanged?.Invoke();
         }
