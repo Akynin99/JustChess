@@ -11,6 +11,8 @@ namespace JustChess
 
         private PieceColor _playerColor;
         
+        private const bool PlayBothColors = true;
+        
         [Inject]
         private void Construct(PieceController pieceController, ChessboardVisual chessboardVisual)
         {
@@ -24,13 +26,23 @@ namespace JustChess
 
             var piece = _pieceController.GetPieceOnSquare(chessPos);
 
-            if (piece != null && piece.Color == _playerColor)
+            if (piece == null)
             {
-                SelectPiece(piece, chessPos);
+                if(_selectedPiece != null)
+                {
+                    TryToMovePiece(_selectedPiece, chessPos);
+                }
             }
-            else if(_selectedPiece != null)
+            else
             {
-                TryToMovePiece(_selectedPiece, chessPos);
+                if(_selectedPiece != null && _selectedPiece.Color != piece.Color)
+                {
+                    TryToMovePiece(_selectedPiece, chessPos);
+                }
+                else if(piece.Color == _playerColor || PlayBothColors)
+                {
+                    SelectPiece(piece, chessPos);
+                }
             }
         }
 
