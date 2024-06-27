@@ -65,7 +65,7 @@ namespace JustChess
         
         public Piece GetPieceOnSquare(ChessVector2 pos)
         {
-            if (_squares.Length <= pos.Y || _squares[pos.Y].Length <= pos.X) return null;
+            if (!IsPosExists(pos)) return null;
 
             return _squares[pos.Y][pos.X].Piece;
         }
@@ -108,6 +108,9 @@ namespace JustChess
             if (rule.OnlyMoveLikePawn)
             {
                 var checkPos = piecePos + movingPiece.Forward;
+                
+                if (!IsPosExists(checkPos)) return availableMoves;
+                
                 var square = _squares[checkPos.Y][checkPos.X];
 
                 if (square.Piece == null)
@@ -117,6 +120,9 @@ namespace JustChess
                     if (movingPiece.MovesCount == 0)
                     {
                         checkPos += movingPiece.Forward;
+                        
+                        if (!IsPosExists(checkPos)) return availableMoves;
+                        
                         square = _squares[checkPos.Y][checkPos.X];
 
                         if (square.Piece == null)
@@ -132,12 +138,37 @@ namespace JustChess
                 
                 return availableMoves;
             }
-            else if (rule.OnlyPatternL)
+
+            if (rule.OnlyPatternL)
             {
-             
+                ChessVector2 checkPos;
+                
+                checkPos = piecePos + movingPiece.Forward * 2 + movingPiece.Right;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
+                checkPos = piecePos + movingPiece.Forward * 2 - movingPiece.Right;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
+                checkPos = piecePos + movingPiece.Forward + movingPiece.Right * 2;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
+                checkPos = piecePos + movingPiece.Forward - movingPiece.Right * 2;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
+                checkPos = piecePos + movingPiece.Back + movingPiece.Right * 2;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
+                checkPos = piecePos + movingPiece.Back - movingPiece.Right * 2;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
+                checkPos = piecePos + movingPiece.Back * 2 + movingPiece.Right;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
+                checkPos = piecePos + movingPiece.Back * 2 - movingPiece.Right;
+                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                
                 return availableMoves;
             }
-            
 
             if (rule.CanMoveHorizontally)
             {
@@ -277,6 +308,31 @@ namespace JustChess
             movingPiece.MovesCount++;
             
             OnPositionChanged?.Invoke();
+        }
+
+        private bool IsPosExists(ChessVector2 pos)
+        {
+            if (pos.Y < 0 || pos.X < 0 || _squares.Length <= pos.Y || _squares[pos.Y].Length <= pos.X) return false;
+
+            return true;
+        }
+        
+        private Piece GetPieceOnPos(ChessVector2 pos)
+        {
+            if (_squares.Length <= pos.Y || _squares[pos.Y].Length <= pos.X) return null;
+
+            return _squares[pos.Y][pos.X].Piece;
+        }
+
+        private bool IsPosExistsAndAvailable(ChessVector2 pos, PieceColor movingPieceColor)
+        {
+            if (IsPosExists(pos))
+            {
+                var piece = GetPieceOnPos(pos);
+                if (piece == null || piece.Color != movingPieceColor) return true;
+            }
+
+            return false;
         }
     }
 }

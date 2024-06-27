@@ -13,15 +13,12 @@ MonoBehaviour:
   m_Name: Pawn
   m_EditorClassIdentifier: 
   pieceType: 0
-  canJump: 0
   canMoveHorizontally: 0
-  canMoveVertically: 1
+  canMoveVertically: 0
   canMoveDiagonally: 0
+  onlyMoveLikePawn: 1
+  onlyPatternL: 0
   maxDistance: 1
-  patternL: 0
-  onlyAdvancing: 1
-  specialFirstMove: 1
-  specialFirstMoveDistance: 2
   enPassant: 1
   canCastling: 0
   canPromotion: 1

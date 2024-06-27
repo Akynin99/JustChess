@@ -27,7 +27,7 @@ namespace JustChess
             _pieceController.OnPositionChanged += OnPositionChanged;
         }
 
-        private void Start()
+        private void Awake()
         {
             CreatePool();
         }

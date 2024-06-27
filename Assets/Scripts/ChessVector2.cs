@@ -15,5 +15,6 @@
         public static ChessVector2 operator -(ChessVector2 a, ChessVector2 b) => new ChessVector2(a.X - b.X, a.Y - b.Y);
         public static ChessVector2 operator +(ChessVector2 a) => new ChessVector2(a.X, a.Y);
         public static ChessVector2 operator -(ChessVector2 a) => new ChessVector2(-a.X, -a.Y);
+        public static ChessVector2 operator *(ChessVector2 a, int b) => new ChessVector2(a.X * b, a.Y * b);
     }
 }

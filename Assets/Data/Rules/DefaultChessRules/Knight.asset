@@ -12,16 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a59408ee6804667ac88587507d4ae21, type: 3}
   m_Name: Knight
   m_EditorClassIdentifier: 
-  pieceType: 3
-  canJump: 1
+  pieceType: 5
   canMoveHorizontally: 0
   canMoveVertically: 0
   canMoveDiagonally: 0
+  onlyMoveLikePawn: 0
+  onlyPatternL: 1
   maxDistance: 0
-  patternL: 1
-  onlyAdvancing: 0
-  specialFirstMove: 0
-  specialFirstMoveDistance: 0
   enPassant: 0
   canCastling: 0
   canPromotion: 0
+  capturesOnlyLikePawn: 0
