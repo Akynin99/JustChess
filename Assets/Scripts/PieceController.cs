@@ -13,7 +13,7 @@ namespace JustChess
         [Inject] private MainSettings _mainSettings;
         
         private RulesSet _rulesSet;
-        private Square[][] _squares;
+        private Square[][] _currentBoard;
         private List<Piece> _pieces;
         private ChessboardVisual _chessboardVisual;
         private PieceVisualController _pieceVisualController;
@@ -33,13 +33,13 @@ namespace JustChess
 
         public void CreateBoard(int ranksCount, int filesCount, ChessPosition initialPosition)
         {
-            _squares = new Square[ranksCount][];
+            _currentBoard = new Square[ranksCount][];
             _pieces = new List<Piece>();
             int nextPieceIndex = 0;
 
-            for (int i = 0; i < _squares.Length; i++)
+            for (int i = 0; i < _currentBoard.Length; i++)
             {
-                _squares[i] = new Square[filesCount];
+                _currentBoard[i] = new Square[filesCount];
             }
 
             foreach (var position in initialPosition.Positions)
@@ -53,7 +53,7 @@ namespace JustChess
                 nextPieceIndex++;
                 
                 _pieces.Add(piece);
-                _squares[position.Y][position.X].Piece = piece;
+                _currentBoard[position.Y][position.X].Piece = piece;
             }
             
             OnPositionChanged?.Invoke();
@@ -61,42 +61,21 @@ namespace JustChess
 
         public Square[][] GetPositions()
         {
-            return _squares;
+            return _currentBoard;
         }
         
         public Piece GetPieceOnSquare(ChessVector2 pos)
         {
             if (!IsPosExists(pos)) return null;
 
-            return _squares[pos.Y][pos.X].Piece;
+            return _currentBoard[pos.Y][pos.X].Piece;
         }
 
-        public List<ChessVector2> GetAvailableMoves(Piece movingPiece)
+        private List<ChessVector2> GetAvailableMovesWithoutCheckingForCheckers(Square[][] board, Piece movingPiece, ChessVector2 movingPiecePos)
         {
             if (movingPiece == null)
             {
                 Debug.LogError("Null movingPiece");
-                return null;
-            }
-
-            ChessVector2 piecePos = new ChessVector2();
-            bool pieceFound = false;
-
-            for (var i = 0; i < _squares.Length; i++)
-            {
-                var rank = _squares[i];
-                for (var j = 0; j < rank.Length; j++)
-                {
-                    var square = rank[j];
-                    if (square.Piece != movingPiece) continue;
-                    pieceFound = true;
-                    piecePos = new ChessVector2(j, i);
-                }
-            }
-
-            if (!pieceFound)
-            {
-                Debug.LogError("Can't find piece position on the board!");
                 return null;
             }
 
@@ -108,11 +87,11 @@ namespace JustChess
 
             if (rule.OnlyMoveLikePawn)
             {
-                var checkPos = piecePos + movingPiece.Forward;
+                var checkPos = movingPiecePos + movingPiece.Forward;
 
                 if (IsPosExists(checkPos))
                 {
-                    var square = _squares[checkPos.Y][checkPos.X];
+                    var square = board[checkPos.Y][checkPos.X];
 
                     if (square.Piece == null)
                     {
@@ -124,7 +103,7 @@ namespace JustChess
                         
                             if (!IsPosExists(checkPos)) return availableMoves;
                         
-                            square = _squares[checkPos.Y][checkPos.X];
+                            square = board[checkPos.Y][checkPos.X];
 
                             if (square.Piece == null)
                             {
@@ -134,20 +113,20 @@ namespace JustChess
                     }
                 }
 
-                checkPos = piecePos + movingPiece.RightForward;
+                checkPos = movingPiecePos + movingPiece.RightForward;
 
                 if (IsPosExists(checkPos))
                 {
-                    var square = _squares[checkPos.Y][checkPos.X];
+                    var square = board[checkPos.Y][checkPos.X];
                     
                     if (square.Piece != null && square.Piece.Color != movingPiece.Color) availableMoves.Add(checkPos);
                 }
                 
-                checkPos = piecePos + movingPiece.LeftForward;
+                checkPos = movingPiecePos + movingPiece.LeftForward;
                 
                 if (IsPosExists(checkPos))
                 {
-                    var square = _squares[checkPos.Y][checkPos.X];
+                    var square = board[checkPos.Y][checkPos.X];
                     
                     if (square.Piece != null && square.Piece.Color != movingPiece.Color) availableMoves.Add(checkPos);
                 }
@@ -159,28 +138,28 @@ namespace JustChess
             {
                 ChessVector2 checkPos;
                 
-                checkPos = piecePos + movingPiece.Forward * 2 + movingPiece.Right;
+                checkPos = movingPiecePos + movingPiece.Forward * 2 + movingPiece.Right;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
-                checkPos = piecePos + movingPiece.Forward * 2 - movingPiece.Right;
+                checkPos = movingPiecePos + movingPiece.Forward * 2 - movingPiece.Right;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
-                checkPos = piecePos + movingPiece.Forward + movingPiece.Right * 2;
+                checkPos = movingPiecePos + movingPiece.Forward + movingPiece.Right * 2;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
-                checkPos = piecePos + movingPiece.Forward - movingPiece.Right * 2;
+                checkPos = movingPiecePos + movingPiece.Forward - movingPiece.Right * 2;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
-                checkPos = piecePos + movingPiece.Back + movingPiece.Right * 2;
+                checkPos = movingPiecePos + movingPiece.Back + movingPiece.Right * 2;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
-                checkPos = piecePos + movingPiece.Back - movingPiece.Right * 2;
+                checkPos = movingPiecePos + movingPiece.Back - movingPiece.Right * 2;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
-                checkPos = piecePos + movingPiece.Back * 2 + movingPiece.Right;
+                checkPos = movingPiecePos + movingPiece.Back * 2 + movingPiece.Right;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
-                checkPos = piecePos + movingPiece.Back * 2 - movingPiece.Right;
+                checkPos = movingPiecePos + movingPiece.Back * 2 - movingPiece.Right;
                 if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 return availableMoves;
@@ -188,15 +167,15 @@ namespace JustChess
 
             if (rule.CanMoveHorizontally)
             {
-                var rank = _squares[piecePos.Y];
+                var rank = board[movingPiecePos.Y];
 
-                for (int i = piecePos.X; i < rank.Length; i++)
+                for (int i = movingPiecePos.X; i < rank.Length; i++)
                 {
-                    if(i == piecePos.X) continue;
-                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.X - i) > rule.MaxDistance) break;
+                    if(i == movingPiecePos.X) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(movingPiecePos.X - i) > rule.MaxDistance) break;
                     
                     var square = rank[i];
-                    var pos = new ChessVector2(i, piecePos.Y);
+                    var pos = new ChessVector2(i, movingPiecePos.Y);
 
                     if (square.Piece == null)
                     {
@@ -213,13 +192,13 @@ namespace JustChess
                     }
                 }
                 
-                for (int i = piecePos.X; i >= 0; i--)
+                for (int i = movingPiecePos.X; i >= 0; i--)
                 {
-                    if(i == piecePos.X) continue;
-                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.X - i) > rule.MaxDistance) break;
+                    if(i == movingPiecePos.X) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(movingPiecePos.X - i) > rule.MaxDistance) break;
                     
                     var square = rank[i];
-                    var pos = new ChessVector2(i, piecePos.Y);
+                    var pos = new ChessVector2(i, movingPiecePos.Y);
 
                     if (square.Piece == null)
                     {
@@ -239,13 +218,13 @@ namespace JustChess
             
             if (rule.CanMoveVertically)
             {
-                for (int i = piecePos.Y; i < _squares.Length; i++)
+                for (int i = movingPiecePos.Y; i < board.Length; i++)
                 {
-                    if(i == piecePos.Y) continue;
-                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.Y - i) > rule.MaxDistance) break;
+                    if(i == movingPiecePos.Y) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(movingPiecePos.Y - i) > rule.MaxDistance) break;
                     
-                    var square = _squares[i][piecePos.X];
-                    var pos = new ChessVector2(piecePos.X, i);
+                    var square = board[i][movingPiecePos.X];
+                    var pos = new ChessVector2(movingPiecePos.X, i);
 
                     if (square.Piece == null)
                     {
@@ -262,13 +241,13 @@ namespace JustChess
                     }
                 }
                 
-                for (int i = piecePos.Y; i >= 0; i--)
+                for (int i = movingPiecePos.Y; i >= 0; i--)
                 {
-                    if(i == piecePos.Y) continue;
-                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.Y - i) > rule.MaxDistance) break;
+                    if(i == movingPiecePos.Y) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(movingPiecePos.Y - i) > rule.MaxDistance) break;
                     
-                    var square = _squares[i][piecePos.X];
-                    var pos = new ChessVector2(piecePos.X, i);
+                    var square = board[i][movingPiecePos.X];
+                    var pos = new ChessVector2(movingPiecePos.X, i);
 
                     if (square.Piece == null)
                     {
@@ -295,7 +274,7 @@ namespace JustChess
 
                 foreach (var direction in directions)
                 {
-                    var checkPos = piecePos + direction;
+                    var checkPos = movingPiecePos + direction;
                     int dist = 1;
                     while (!(rule.MaxDistance > 0 && dist > rule.MaxDistance) && IsPosExistsAndAvailable(checkPos, movingPiece.Color))
                     {
@@ -309,6 +288,116 @@ namespace JustChess
             }
 
             return availableMoves;
+        }
+
+        private List<ChessVector2> RemoveCheckersMoves(Square[][] board, List<ChessVector2> moves, Piece movingPiece, ChessVector2 oldPiecePos)
+        {
+            List<ChessVector2> movesForRemoving = new List<ChessVector2>();
+            
+            foreach (var move in moves)
+            {
+                Square[][] newPosition = new Square[board.Length][];
+
+                for (var i = 0; i < newPosition.Length; i++)
+                {
+                    newPosition[i] = new Square[board[i].Length];
+
+                    for (int j = 0; j < newPosition[i].Length; j++)
+                    {
+                        newPosition[i][j] = board[i][j];
+                    }
+                }
+
+                newPosition[oldPiecePos.Y][oldPiecePos.X].Piece = null;
+                newPosition[move.Y][move.X].Piece = movingPiece;
+                
+                if(PositionHasCheck(newPosition, movingPiece.Color)) movesForRemoving.Add(move);
+            }
+
+            foreach (var moveForRemoving in movesForRemoving)
+            {
+                moves.Remove(moveForRemoving);
+            }
+
+            return moves;
+        }
+
+        private bool PositionHasCheck(Square[][] board, PieceColor kingColor)
+        {
+            ChessVector2 kingPosition = new ChessVector2();
+            bool pieceFound = false;
+
+            for (var i = 0; i < board.Length; i++)
+            {
+                var rank = board[i];
+                for (var j = 0; j < rank.Length; j++)
+                {
+                    var square = rank[j];
+                    if (square.Piece == null || square.Piece.Color != kingColor || square.Piece.Type != PieceType.King) continue;
+                    pieceFound = true;
+                    kingPosition = new ChessVector2(j, i);
+                    break;
+                }
+                
+                if (pieceFound) break;
+            }
+
+            if (!pieceFound)
+            {
+                Debug.LogError("Can't find piece King!");
+                return false;
+            }
+
+            for (var i = 0; i < board.Length; i++)
+            {
+                var rank = board[i];
+                for (var j = 0; j < rank.Length; j++)
+                {
+                    var square = rank[j];
+                    if (square.Piece == null || square.Piece.Color == kingColor) continue;
+
+                    ChessVector2 piecePos = new ChessVector2(j, i);
+
+                    if (GetAvailableMovesWithoutCheckingForCheckers(board, square.Piece, piecePos)
+                        .Contains(kingPosition)) return true;
+                }
+            }
+
+            return false;
+        }
+
+        public List<ChessVector2> GetAvailableMoves(Piece movingPiece)
+        {
+            bool pieceFound = false;
+
+            ChessVector2 movingPiecePos = new ChessVector2();
+
+            for (var i = 0; i < _currentBoard.Length; i++)
+            {
+                var rank = _currentBoard[i];
+                for (var j = 0; j < rank.Length; j++)
+                {
+                    var square = rank[j];
+                    if (square.Piece != movingPiece) continue;
+                    pieceFound = true;
+                    movingPiecePos = new ChessVector2(j, i);
+                    break;
+                }
+                
+                if (pieceFound) break;
+            }
+
+            if (!pieceFound)
+            {
+                Debug.LogError("Can't find piece position on the board!");
+                return null;
+            }
+            
+            var moves = GetAvailableMovesWithoutCheckingForCheckers(_currentBoard, movingPiece, movingPiecePos);
+
+            moves = RemoveCheckersMoves(_currentBoard, moves, movingPiece, movingPiecePos);
+
+            return moves;
         }
 
         public bool IsMoveAvailable(Piece movingPiece, ChessVector2 targetPos)
@@ -332,9 +421,9 @@ namespace JustChess
             ChessVector2 pieceOldPos = new ChessVector2();
             bool pieceFound = false;
 
-            for (var i = 0; i < _squares.Length; i++)
+            for (var i = 0; i < _currentBoard.Length; i++)
             {
-                var rank = _squares[i];
+                var rank = _currentBoard[i];
                 for (var j = 0; j < rank.Length; j++)
                 {
                     if (rank[j].Piece != movingPiece) continue;
@@ -346,7 +435,7 @@ namespace JustChess
 
             if (!pieceFound) return;
 
-            _squares[targetPos.Y][targetPos.X].Piece = movingPiece;
+            _currentBoard[targetPos.Y][targetPos.X].Piece = movingPiece;
             movingPiece.MovesCount++;
 
             int currentTurnIdx = (int)_currentTurn;
@@ -359,16 +448,16 @@ namespace JustChess
 
         private bool IsPosExists(ChessVector2 pos)
         {
-            if (pos.Y < 0 || pos.X < 0 || _squares.Length <= pos.Y || _squares[pos.Y].Length <= pos.X) return false;
+            if (pos.Y < 0 || pos.X < 0 || _currentBoard.Length <= pos.Y || _currentBoard[pos.Y].Length <= pos.X) return false;
 
             return true;
         }
         
         private Piece GetPieceOnPos(ChessVector2 pos)
         {
-            if (_squares.Length <= pos.Y || _squares[pos.Y].Length <= pos.X) return null;
+            if (_currentBoard.Length <= pos.Y || _currentBoard[pos.Y].Length <= pos.X) return null;
 
-            return _squares[pos.Y][pos.X].Piece;
+            return _currentBoard[pos.Y][pos.X].Piece;
         }
 
         private bool IsPosExistsAndAvailable(ChessVector2 pos, PieceColor movingPieceColor)
