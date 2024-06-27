@@ -177,6 +177,8 @@ namespace JustChess
                 for (int i = piecePos.X; i < rank.Length; i++)
                 {
                     if(i == piecePos.X) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.X - i) > rule.MaxDistance) break;
+                    
                     var square = rank[i];
                     var pos = new ChessVector2(i, piecePos.Y);
 
@@ -198,6 +200,8 @@ namespace JustChess
                 for (int i = piecePos.X; i >= 0; i--)
                 {
                     if(i == piecePos.X) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.X - i) > rule.MaxDistance) break;
+                    
                     var square = rank[i];
                     var pos = new ChessVector2(i, piecePos.Y);
 
@@ -222,6 +226,8 @@ namespace JustChess
                 for (int i = piecePos.Y; i < _squares.Length; i++)
                 {
                     if(i == piecePos.Y) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.Y - i) > rule.MaxDistance) break;
+                    
                     var square = _squares[i][piecePos.X];
                     var pos = new ChessVector2(piecePos.X, i);
 
@@ -243,6 +249,8 @@ namespace JustChess
                 for (int i = piecePos.Y; i >= 0; i--)
                 {
                     if(i == piecePos.Y) continue;
+                    if(rule.MaxDistance > 0 && Mathf.Abs(piecePos.Y - i) > rule.MaxDistance) break;
+                    
                     var square = _squares[i][piecePos.X];
                     var pos = new ChessVector2(piecePos.X, i);
 
@@ -264,6 +272,23 @@ namespace JustChess
 
             if (rule.CanMoveDiagonally)
             {
+                ChessVector2[] directions = new[]
+                {
+                    movingPiece.LeftForward, movingPiece.RightForward, movingPiece.LeftBack, movingPiece.RightBack
+                };
+
+                foreach (var direction in directions)
+                {
+                    var checkPos = piecePos + direction;
+                    int dist = 1;
+                    while (!(rule.MaxDistance > 0 && dist > rule.MaxDistance) && IsPosExistsAndAvailable(checkPos, movingPiece.Color))
+                    {
+                        availableMoves.Add(checkPos);
+                        
+                        checkPos +=  direction;
+                        dist++;
+                    }
+                }
                 
             }
             

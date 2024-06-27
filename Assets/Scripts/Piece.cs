@@ -14,6 +14,8 @@ namespace JustChess
         public ChessVector2 Left;
         public ChessVector2 RightForward;
         public ChessVector2 LeftForward;
+        public ChessVector2 RightBack;
+        public ChessVector2 LeftBack;
 
         public Piece(PieceType type, PieceColor color, int index, ChessVector2 forward)
         {
@@ -31,6 +33,8 @@ namespace JustChess
             Left = -Right;
             RightForward = Forward + Right;
             LeftForward = Forward + Left;
+            RightBack = -LeftForward;
+            LeftBack = -RightForward;
         }
     }
 }
