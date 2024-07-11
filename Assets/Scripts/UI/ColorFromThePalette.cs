@@ -19,7 +19,9 @@ namespace JustChess.UI
 
             if (image)
             {
-                image.color = _colorPalette.GetColorByIndex(colorIndex);
+                Color color = _colorPalette.GetColorByIndex(colorIndex);
+                color.a = image.color.a;
+                image.color = color;
                 return;
             }
             
@@ -27,7 +29,9 @@ namespace JustChess.UI
 
             if (tmp)
             {
-                tmp.color = _colorPalette.GetColorByIndex(colorIndex);
+                Color color = _colorPalette.GetColorByIndex(colorIndex);
+                color.a = tmp.color.a;
+                tmp.color = color;
                 return;
             }
             
@@ -35,7 +39,9 @@ namespace JustChess.UI
 
             if (camera)
             {
-                camera.backgroundColor = _colorPalette.GetColorByIndex(colorIndex);
+                Color color = _colorPalette.GetColorByIndex(colorIndex);
+                color.a = camera.backgroundColor.a;
+                camera.backgroundColor = color;
                 return;
             }
         }

@@ -9,6 +9,7 @@ namespace JustChess
     public class PieceController : MonoBehaviour
     {
         public Action OnPositionChanged;
+        public Action<GameResult> OnGameEnded;
 
         [Inject] private MainSettings _mainSettings;
         
@@ -139,28 +140,28 @@ namespace JustChess
                 ChessVector2 checkPos;
                 
                 checkPos = movingPiecePos + movingPiece.Forward * 2 + movingPiece.Right;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 checkPos = movingPiecePos + movingPiece.Forward * 2 - movingPiece.Right;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 checkPos = movingPiecePos + movingPiece.Forward + movingPiece.Right * 2;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 checkPos = movingPiecePos + movingPiece.Forward - movingPiece.Right * 2;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 checkPos = movingPiecePos + movingPiece.Back + movingPiece.Right * 2;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 checkPos = movingPiecePos + movingPiece.Back - movingPiece.Right * 2;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 checkPos = movingPiecePos + movingPiece.Back * 2 + movingPiece.Right;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 checkPos = movingPiecePos + movingPiece.Back * 2 - movingPiece.Right;
-                if (IsPosExistsAndAvailable(checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
+                if (IsPosExistsAndAvailable(board, checkPos, movingPiece.Color)) availableMoves.Add(checkPos);
                 
                 return availableMoves;
             }
@@ -276,8 +277,17 @@ namespace JustChess
                 {
                     var checkPos = movingPiecePos + direction;
                     int dist = 1;
-                    while (!(rule.MaxDistance > 0 && dist > rule.MaxDistance) && IsPosExistsAndAvailable(checkPos, movingPiece.Color))
+                    while (!(rule.MaxDistance > 0 && dist > rule.MaxDistance) && IsPosExists(checkPos))
                     {
+                        var piece = GetPieceOnPos(board, checkPos);
+                        if (piece != null && piece.Color == movingPiece.Color) break;
+                        
+                        if(piece != null && piece.Color != movingPiece.Color)
+                        {
+                            availableMoves.Add(checkPos);
+                            break;
+                        }
+                        
                         availableMoves.Add(checkPos);
                         
                         checkPos +=  direction;
@@ -444,6 +454,40 @@ namespace JustChess
             _currentTurn = (PieceColor)nextTurn;
             
             OnPositionChanged?.Invoke();
+            
+            CheckGameEnded();
+        }
+
+        private void CheckGameEnded()
+        {
+            for (var i = 0; i < _currentBoard.Length; i++)
+            {
+                var rank = _currentBoard[i];
+                for (var j = 0; j < rank.Length; j++)
+                {
+                    var square = rank[j];
+                    if (square.Piece == null || square.Piece.Color != _currentTurn) continue;
+
+                    ChessVector2 piecePos = new ChessVector2(j, i);
+
+                    if (GetAvailableMoves(square.Piece).Count > 0) return;
+                }
+            }
+            
+            GameResult result = new GameResult();
+
+            if (PositionHasCheck(_currentBoard, _currentTurn))
+            {
+                result.Type = _currentTurn == PieceColor.White
+                    ? GameResult.GameResultType.Loose
+                    : GameResult.GameResultType.Win;
+            }
+            else
+            {
+                result.Type = GameResult.GameResultType.Draw;
+            }
+            
+            OnGameEnded?.Invoke(result);
         }
 
         private bool IsPosExists(ChessVector2 pos)
@@ -453,18 +497,18 @@ namespace JustChess
             return true;
         }
         
-        private Piece GetPieceOnPos(ChessVector2 pos)
+        private Piece GetPieceOnPos(Square[][] board, ChessVector2 pos)
         {
             if (_currentBoard.Length <= pos.Y || _currentBoard[pos.Y].Length <= pos.X) return null;
 
             return _currentBoard[pos.Y][pos.X].Piece;
         }
 
-        private bool IsPosExistsAndAvailable(ChessVector2 pos, PieceColor movingPieceColor)
+        private bool IsPosExistsAndAvailable(Square[][] board, ChessVector2 pos, PieceColor movingPieceColor)
         {
             if (IsPosExists(pos))
             {
-                var piece = GetPieceOnPos(pos);
+                var piece = GetPieceOnPos(board, pos);
                 if (piece == null || piece.Color != movingPieceColor) return true;
             }
 
